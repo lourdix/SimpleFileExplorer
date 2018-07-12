@@ -1,8 +1,8 @@
 # SimpleFileExplorer
 
-Simple file explorer.
+Simple file explorer V1.0 pour android
+Lecture PDF, image, video, xml, excel.
 
-Lecture image pdf video docx doc ....
 
 
-Version 1.0
+
