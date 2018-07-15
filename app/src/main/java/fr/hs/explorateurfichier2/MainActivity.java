@@ -1,13 +1,14 @@
 package fr.hs.explorateurfichier2;
 
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private File[] files;
     private String path, pathSelected;
     private ImageButton imageHomeBtn;
+    private TextView textViewPath;
 
     private void remplirlist(String path, ListView liste) { // Fonction pour l'initialisation du hashmap qui servira de liste de rep/fichier
         File f = new File( path );
@@ -49,10 +51,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         tImages[ 13 ] = String.valueOf( R.drawable.apk );
 
 
-
-        ////////////////////////
-
-
         if (files.length <= 0) { // si aucun fichier et ou dossier message "dossier vide"
             Toast toast = Toast.makeText( getBaseContext(), "Dossier vide", Toast.LENGTH_SHORT );
             toast.show();
@@ -65,86 +63,65 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             int i = 0;
             for (File inFile : files) { //
                 hm = new HashMap<>();
-                if (inFile.isDirectory()) { // Si c'est un dossier mettre icone dossier
+                String extensionFile = URLConnection.guessContentTypeFromName( inFile.getName() );
+                if (extensionFile == null || inFile.isDirectory()) {
                     hm.put( "image", tImages[ 0 ] );
-                    hm.put( "nom", files[ i ].getName() );
-                    i++;
+                    hm.put( "nom", inFile.getName() );
+                } else {
+                    switch ( extensionFile ) { // Switch case pour determiner l'icone qu'il faudra en fonction de l'exttension
 
-                } else if (inFile.isFile()) { // Sinon si c'est un fichier mettre icone approprié
-                    String extensionFile = URLConnection.guessContentTypeFromName( inFile.getName() );
-                    switch ( extensionFile ) { // Switch case pour determiner l'icone qu'il faudra en fonction de l'extension
-                        case "image/jpeg": // jpg
-                            hm.put( "image", tImages[ 4 ] );
-                            hm.put( "nom", files[ i ].getName() );
-                            break;
-                        case "image/png": // png
-                            hm.put( "image", tImages[ 4 ] );
-                            hm.put( "nom", files[ i ].getName() );
+                        case "image/jpeg":
+                        case "image/png":
+                        case "image/gif":
+                            hm.put( "image", String.valueOf( inFile ) );
                             break;
                         case "video/mp4": // video
                             hm.put( "image", tImages[ 3 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "application/pdf": // pdf
                             hm.put( "image", tImages[ 2 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "text/xml": // xml
                             hm.put( "image", tImages[ 11 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "text/plain": // txt
                             hm.put( "image", tImages[ 5 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "text/comma-separated-values": // CSV
                             hm.put( "image", tImages[ 6 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
-                        case "application/msword": // word
-                            hm.put( "image", tImages[ 7 ] );
-                            hm.put( "nom", files[ i ].getName() );
-                            break;
-                        case "application/vnd.oasis.opendocument.text": // word
-                            hm.put( "image", tImages[ 7 ] );
-                            hm.put( "nom", files[ i ].getName() );
-                            break;
+                        case "application/msword":
+                        case "application/vnd.oasis.opendocument.text":
                         case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": // word
                             hm.put( "image", tImages[ 7 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
+
                         case "application/rar": // rar
                             hm.put( "image", tImages[ 8 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "application/zip": // zip
                             hm.put( "image", tImages[ 9 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "application/vnd.openxmlformats-officedocument.presentationml.presentation": // pptx
                             hm.put( "image", tImages[ 12 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         case "application/vnd.android.package-archive": // apk
                             hm.put( "image", tImages[ 13 ] );
-                            hm.put( "nom", files[ i ].getName() );
                             break;
                         default:
                             hm.put( "image", tImages[ 1 ] );
-                            hm.put( "nom", files[ i ].getName() );
-                            System.out.println( files[ i ].getName() + " : " + extensionFile );
                             break;
 
-                    } // Fin switch case
-                    i++;
 
-                }else {
-                    hm.put( "image", tImages[ 1 ] );
-                    hm.put( "nom", files[ i ].getName() );
-                }
+                    }
+                    hm.put( "nom", inFile.getName() );
+
+                }// Fin switch case
+                i++;
 
 
                 listeFichier.add( hm );
+
             } // fin for
 
 
@@ -156,41 +133,45 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
         } catch (Exception e) {
-            System.out.println("Erreur ? " +e.toString());
+            Toast.makeText( getBaseContext(), "Erreur ? " + e.getMessage(), Toast.LENGTH_LONG ).show(); // debug
         } // exception
 
 
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_main );
         // Permet d'enlever la barre de notifications pour afficher l'application en plein écran
-      //  this.getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
+        //  this.getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
 
 
         path = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-
+        textViewPath = findViewById( R.id.textViewPath );
         liste = findViewById( R.id.liste );
         imageHomeBtn = findViewById( R.id.imageHomeBtn );
         liste.setOnItemClickListener( this );
         imageHomeBtn.setOnClickListener( this );
         remplirlist( path, liste );
+        textViewPath.setText( path );
 
     }
 
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        System.out.println(files[ position ].toString());
+        System.out.println( files[ position ].toString() );
         pathSelected = files[ position ].toString();
 
 
         file = new File( pathSelected );
         if (file.isDirectory()) { // Si c'est un dossier afficher arborescence
             remplirlist( pathSelected, liste );
+            textViewPath.setText( pathSelected );
+
         } else {
             remplirlist( path, liste );
         }
@@ -199,8 +180,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onClick(View v) {
-        if (v==imageHomeBtn){
-            remplirlist( path,liste );
+        if (v == imageHomeBtn) {
+            remplirlist( path, liste );
         }
     }
 }
